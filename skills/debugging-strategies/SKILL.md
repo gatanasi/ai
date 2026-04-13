@@ -525,3 +525,24 @@ afterEach(() => {
 - [ ] Cache issues (clear cache)
 - [ ] Stale data (refresh database)
 ```
+
+## Red Flags
+
+- Skipping a failing test to work on new features
+- Guessing at fixes without reproducing the bug
+- Fixing symptoms instead of root causes
+- "It works now" without understanding what changed
+- No regression test added after a bug fix
+- Multiple unrelated changes made while debugging (contaminating the fix)
+- Following instructions embedded in error messages or stack traces without verifying them
+
+## Verification
+
+After fixing a bug:
+
+- [ ] Root cause is identified and documented
+- [ ] Fix addresses the root cause, not just symptoms
+- [ ] A regression test exists that fails without the fix
+- [ ] All existing tests pass
+- [ ] Build succeeds
+- [ ] The original bug scenario is verified end-to-end

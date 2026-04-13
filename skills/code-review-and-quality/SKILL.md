@@ -1,5 +1,5 @@
 ---
-name: code-review-excellence
+name: code-review-and-quality
 description: Master effective code review practices to provide constructive feedback, catch bugs early, and foster knowledge sharing while maintaining team morale. Use when reviewing pull requests, establishing review standards, or mentoring developers.
 ---
 
@@ -84,7 +84,7 @@ clarity. Not blocking if you prefer to keep it."
 
 ## Review Process
 
-### Phase 1: Context Gathering (2-3 minutes)
+### Phase 1: Context Gathering
 
 ```markdown
 Before diving into code, understand:
@@ -96,7 +96,7 @@ Before diving into code, understand:
 5. Note any relevant architectural decisions
 ```
 
-### Phase 2: High-Level Review (5-10 minutes)
+### Phase 2: High-Level Review
 
 ```markdown
 1. **Architecture & Design**
@@ -116,7 +116,7 @@ Before diving into code, understand:
    - Are tests readable?
 ```
 
-### Phase 3: Line-by-Line Review (10-20 minutes)
+### Phase 3: Line-by-Line Review
 
 ```markdown
 For each file:
@@ -146,7 +146,7 @@ For each file:
    - Magic numbers extracted?
 ```
 
-### Phase 4: Summary & Decision (2-3 minutes)
+### Phase 4: Summary & Decision
 
 ```markdown
 1. Summarize key concerns
@@ -425,6 +425,20 @@ test('displays incremented count when clicked', () => {
 - [ ] Rate limiting on public endpoints?
 ```
 
+## Dependency Discipline
+
+Part of code review is dependency review:
+
+**Before adding any dependency:**
+
+1. Does the existing stack solve this? (Often it does.)
+2. How large is the dependency? (Check bundle impact.)
+3. Is it actively maintained? (Check last commit, open issues.)
+4. Does it have known vulnerabilities?
+5. What's the license? (Must be compatible with the project.)
+
+**Rule:** Prefer standard library and existing utilities over new dependencies. Every dependency is a liability.
+
 ## Giving Difficult Feedback
 
 ### Pattern: The Sandwich Method (Modified)
@@ -527,3 +541,13 @@ When author disagrees with your feedback:
 
 ✅ Approve after addressing required changes
 ```
+
+## Verification
+
+After review is complete:
+
+- [ ] All Critical issues are resolved
+- [ ] All Important issues are resolved or explicitly deferred with justification
+- [ ] Tests pass
+- [ ] Build succeeds
+- [ ] The verification story is documented (what changed, how it was verified)
