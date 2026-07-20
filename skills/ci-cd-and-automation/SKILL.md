@@ -186,7 +186,7 @@ Agent fixes → pushes → CI runs again
 ```
 Lint failure → Agent runs `npm run lint --fix` and commits
 Type error  → Agent reads the error location and fixes the type
-Test failure → Agent follows debugging-and-error-recovery skill
+Test failure → Agent follows debugging-strategies skill
 Build error → Agent checks config and dependencies
 ```
 
@@ -209,22 +209,7 @@ deploy-preview:
 
 ### Feature Flags
 
-Feature flags decouple deployment from release. Deploy incomplete or risky features behind flags so you can:
-
-- **Ship code without enabling it.** Merge to main early, enable when ready.
-- **Roll back without redeploying.** Disable the flag instead of reverting code.
-- **Canary new features.** Enable for 1% of users, then 10%, then 100%.
-- **Run A/B tests.** Compare behavior with and without the feature.
-
-```typescript
-// Simple feature flag pattern
-if (featureFlags.isEnabled('new-checkout-flow', { userId })) {
-  return renderNewCheckout();
-}
-return renderLegacyCheckout();
-```
-
-**Flag lifecycle:** Create → Enable for testing → Canary → Full rollout → Remove the flag and dead code. Flags that live forever become technical debt — set a cleanup date when you create them.
+Feature flags decouple deployment from release: merge to main early with the flag off, enable when ready, and roll back by disabling instead of redeploying. Flag strategy, lifecycle, and staged rollout percentages are owned by `shipping-and-launch` — CI's job is to test both flag states and enforce flag cleanup dates.
 
 ### Staged Rollouts
 
@@ -361,7 +346,7 @@ jobs:
 
 | Rationalization | Reality |
 |---|---|
-| "CI is too slow" | Optimize the pipeline (see CI Optimization below), don't skip it. A 5-minute pipeline prevents hours of debugging. |
+| "CI is too slow" | Optimize the pipeline (see CI Optimization above), don't skip it. A 5-minute pipeline prevents hours of debugging. |
 | "This change is trivial, skip CI" | Trivial changes break builds. CI is fast for trivial changes anyway. |
 | "The test is flaky, just re-run" | Flaky tests mask real bugs and waste everyone's time. Fix the flakiness. |
 | "We'll add CI later" | Projects without CI accumulate broken states. Set it up on day one. |

@@ -7,7 +7,7 @@ description: Tests in real browsers. Use when building or debugging anything tha
 
 ## Overview
 
-Use Chrome DevTools MCP to give your agent eyes into the browser. This bridges the gap between static code analysis and live browser execution — the agent can see what the user sees, inspect the DOM, read console logs, analyze network requests, and capture performance data. Instead of guessing what's happening at runtime, verify it.
+Use Chrome DevTools — via the MCP server or the `chrome-devtools-axi` CLI — to give your agent eyes into the browser. This bridges the gap between static code analysis and live browser execution — the agent can see what the user sees, inspect the DOM, read console logs, analyze network requests, and capture performance data. Instead of guessing what's happening at runtime, verify it.
 
 ## When to Use
 
@@ -21,22 +21,23 @@ Use Chrome DevTools MCP to give your agent eyes into the browser. This bridges t
 
 **When NOT to use:** Backend-only changes, CLI tools, or code that doesn't run in a browser.
 
-## Setting Up Chrome DevTools MCP
+## Setting Up Browser Access
 
-### Installation
+If your agent supports MCP servers, add the official Chrome DevTools MCP server:
 
-```bash
-# Add Chrome DevTools MCP server to your Claude Code config
-# In your project's .mcp.json or Claude Code settings:
+```json
+// .mcp.json (or your agent's MCP config)
 {
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["@anthropic/chrome-devtools-mcp@latest"]
+      "args": ["chrome-devtools-mcp@latest"]
     }
   }
 }
 ```
+
+If your agent runs CLI tools instead of MCP servers, the `chrome-devtools-axi` skill provides the same capabilities (snapshot, click, console, network, screenshots, performance) via `npx -y chrome-devtools-axi`. The workflows below apply to either mechanism.
 
 ### Available Tools
 
@@ -174,50 +175,24 @@ For complex UI issues, write a structured test plan the agent can follow in the 
 ```markdown
 ## Test Plan: Task completion animation bug
 
-### Setup
-1. Navigate to http://localhost:3000/tasks
-2. Ensure at least 3 tasks exist
+### Setup: http://localhost:3000/tasks with at least 3 tasks
 
 ### Steps
-1. Click the checkbox on the first task
-   - Expected: Task shows strikethrough animation, moves to "completed" section
-   - Check: Console should have no errors
-   - Check: Network should show PATCH /api/tasks/:id with { status: "completed" }
-
-2. Click undo within 3 seconds
-   - Expected: Task returns to active list with reverse animation
-   - Check: Console should have no errors
-   - Check: Network should show PATCH /api/tasks/:id with { status: "pending" }
-
-3. Rapidly toggle the same task 5 times
-   - Expected: No visual glitches, final state is consistent
-   - Check: No console errors, no duplicate network requests
-   - Check: DOM should show exactly one instance of the task
+1. Click the first task's checkbox
+   - Expected: strikethrough animation, task moves to "completed" section
+   - Check: no console errors; network shows PATCH /api/tasks/:id { status: "completed" }
+2. Rapidly toggle the same task 5 times
+   - Expected: no visual glitches, final state consistent
+   - Check: no duplicate requests; DOM shows exactly one instance of the task
 
 ### Verification
-- [ ] All steps completed without console errors
-- [ ] Network requests are correct and not duplicated
-- [ ] Visual state matches expected behavior
-- [ ] Accessibility: task status changes are announced to screen readers
+- [ ] All steps pass with a clean console and correct network traffic
+- [ ] Status changes are announced to screen readers
 ```
 
 ## Screenshot-Based Verification
 
-Use screenshots for visual regression testing:
-
-```
-1. Take a "before" screenshot
-2. Make the code change
-3. Reload the page
-4. Take an "after" screenshot
-5. Compare: does the change look correct?
-```
-
-This is especially valuable for:
-- CSS changes (layout, spacing, colors)
-- Responsive design at different viewport sizes
-- Loading states and transitions
-- Empty states and error states
+Take a "before" screenshot, make the change, reload, take an "after" screenshot, and compare. Especially valuable for CSS/layout changes, responsive breakpoints, loading transitions, and empty/error states.
 
 ## Console Analysis Patterns
 
