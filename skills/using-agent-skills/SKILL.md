@@ -25,7 +25,7 @@ Task arrives
     │   ├── Need better context? ─────→ context-engineering
     │   └── Need doc-verified code? ───→ source-driven-development
     ├── Writing/running tests? ────────→ test-driven-development
-    │   └── Browser-based? ───────────→ browser-testing-with-devtools
+    │   └── Browser-based? ───────────→ chrome-devtools-axi
     ├── Something broke? ──────────────→ debugging-strategies
     ├── Reviewing code? ───────────────→ code-review-and-quality
     │   ├── Security concerns? ───────→ security-and-hardening

@@ -15,7 +15,7 @@ Skills live in `skills/<name>/SKILL.md`. If a task matches a skill — even part
 | BUILD | Implementing anything | `incremental-implementation` + `test-driven-development` |
 | BUILD | UI work / API design / framework code | `frontend-ui-engineering` / `api-and-interface-design` / `source-driven-development` |
 | VERIFY | Bug, failure, unexpected behavior | `debugging-strategies` |
-| VERIFY | Browser-based behavior | `browser-testing-with-devtools` |
+| VERIFY | Browser-based behavior | `chrome-devtools-axi` |
 | REVIEW | Code review | `code-review-and-quality` |
 | REVIEW | Security or performance concern | `security-and-hardening` / `performance-optimization` |
 | SHIP | Commit, refactor, CI, deploy | `git-workflow-and-versioning`, `code-simplification`, `ci-cd-and-automation`, `shipping-and-launch` |
