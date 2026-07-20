@@ -39,9 +39,9 @@ Don't mix strategies ad hoc. Pick one primary mechanism; OAuth login should feed
 - Access tokens are short-lived (15–30 min). Anything longer must be revocable server-side.
 
 **JWT specifics**
-- Verify signature, expiry, and (for third-party tokens) issuer + audience on every request. Pin the algorithm; reject `alg: none`.
+- Verify signature and expiry on every request — and issuer + audience whenever more than one issuer or audience exists in the trust boundary (always, for third-party tokens), with explicit per-service configuration. Pin the algorithm; reject `alg: none`.
 - Keep payloads minimal — no PII, no secrets; JWTs are readable by anyone who holds them.
-- Refresh tokens: store hashed in the database, expire them, rotate on use, and delete on logout (single device) or by user id (all devices). This is your only revocation lever.
+- Refresh tokens: store hashed in the database, expire them, rotate on use, and delete on logout (single device) or by user id (all devices). This is the primary revocation lever — already-issued access tokens stay valid until expiry unless you also add denylisting, introspection, or a session-version check.
 
 **OAuth2 / OIDC**
 - Always use `state` (CSRF) and PKCE. Use the authorization-code flow; never the implicit flow.
@@ -64,11 +64,14 @@ Don't mix strategies ad hoc. Pick one primary mechanism; OAuth login should feed
 Most real systems combine them: RBAC or permissions for capabilities, plus an ownership check on every resource access.
 
 ```typescript
-// The check every protected mutation needs — authn is not authz
+// The check every protected mutation needs — authn is not authz.
+// Runs after authentication middleware, so req.user is present.
 const task = await taskService.findById(req.params.id);
-if (!task) return res.status(404).json({ error: { code: 'NOT_FOUND' } });
-if (task.ownerId !== req.user.id && req.user.role !== 'admin') {
-  return res.status(403).json({ error: { code: 'FORBIDDEN' } });
+const allowed = task && (task.ownerId === req.user.id || req.user.role === 'admin');
+if (!allowed) {
+  // 404 for missing AND foreign-owned — avoids confirming existence.
+  // Use 403 instead only where enumeration isn't a concern.
+  return res.status(404).json({ error: { code: 'NOT_FOUND' } });
 }
 ```
 

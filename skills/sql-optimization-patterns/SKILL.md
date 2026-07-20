@@ -57,7 +57,7 @@ CREATE INDEX idx_users_email_covering ON users(email) INCLUDE (name);  -- coveri
 | `LIMIT 20 OFFSET 100000` | Keyset pagination: `WHERE (created_at, id) < ($cursor_at, $cursor_id) ORDER BY created_at DESC, id DESC LIMIT 20` + matching index |
 | Correlated subquery per row | Rewrite as JOIN + GROUP BY, or a window function |
 | Row-by-row INSERT/UPDATE loops | Multi-row `VALUES`, `COPY` for bulk loads, or update via join to a temp table |
-| `COUNT(*)` over a huge table for UI | Filtered count on an indexed column, or `pg_class.reltuples` estimate when approximate is fine |
+| `COUNT(*)` over a huge table for UI | Index-backed filtered count (still O(matching rows)), a `pg_class.reltuples` estimate, or a maintained counter when the UI needs only a rough number |
 | Filtering only in `HAVING` | Move row-level conditions to `WHERE` so they prune before aggregation |
 
 Use CTEs for readability, but check the plan — they can act as optimization fences in some databases/versions.
@@ -82,6 +82,8 @@ SELECT relname, seq_scan, seq_tup_read, idx_scan FROM pg_stat_user_tables ORDER 
 SELECT relname, indexrelname, idx_scan FROM pg_stat_user_indexes WHERE idx_scan = 0
 ORDER BY pg_relation_size(indexrelid) DESC;
 ```
+
+`idx_scan = 0` is meaningful only over a representative window since the last statistics reset (new or recently-reset indexes look unused). Never drop indexes backing primary keys or unique constraints, and check replica usage and dependent objects before removal.
 
 ## Red Flags
 

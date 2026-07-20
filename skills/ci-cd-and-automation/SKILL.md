@@ -209,7 +209,7 @@ deploy-preview:
 
 ### Feature Flags
 
-Feature flags decouple deployment from release: merge to main early with the flag off, enable when ready, and roll back by disabling instead of redeploying. Flag strategy, lifecycle, and staged rollout percentages are owned by `shipping-and-launch` — CI's job is to test both flag states and enforce flag cleanup dates.
+Feature flags decouple deployment from release: merge to main early with the flag off, enable when ready, and roll back by disabling instead of redeploying. Flag strategy, lifecycle, and staged rollout percentages are owned by `shipping-and-launch` — CI's job is to test both flag states and to surface expired flags for cleanup.
 
 ### Staged Rollouts
 

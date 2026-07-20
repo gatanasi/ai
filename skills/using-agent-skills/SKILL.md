@@ -13,7 +13,7 @@ Each skill in this collection encodes a process that senior engineers follow, or
 
 When a task arrives, identify the development phase and apply the corresponding skill:
 
-```
+```text
 Task arrives
     │
     ├── Vague idea/need refinement? ──→ idea-refine
@@ -22,14 +22,18 @@ Task arrives
     ├── Implementing code? ────────────→ incremental-implementation
     │   ├── UI work? ─────────────────→ frontend-ui-engineering
     │   ├── API work? ────────────────→ api-and-interface-design
+    │   ├── Auth work? ───────────────→ auth-implementation-patterns
+    │   ├── Error handling? ──────────→ error-handling-patterns
     │   ├── Need better context? ─────→ context-engineering
     │   └── Need doc-verified code? ───→ source-driven-development
     ├── Writing/running tests? ────────→ test-driven-development
-    │   └── Browser-based? ───────────→ chrome-devtools-axi
+    │   └── E2E suite? ───────────────→ e2e-testing-patterns
+    ├── Verifying in a real browser? ──→ chrome-devtools-axi
     ├── Something broke? ──────────────→ debugging-strategies
     ├── Reviewing code? ───────────────→ code-review-and-quality
     │   ├── Security concerns? ───────→ security-and-hardening
-    │   └── Performance concerns? ────→ performance-optimization
+    │   ├── Performance concerns? ────→ performance-optimization
+    │   └── Slow SQL/queries? ────────→ sql-optimization-patterns
     ├── Refactoring for clarity? ──────→ code-simplification
     ├── Complex visual response? ──────→ lavish
     ├── Committing/branching? ─────────→ git-workflow-and-versioning
@@ -47,7 +51,7 @@ These behaviors apply at all times, across all skills. They are non-negotiable.
 
 Before implementing anything non-trivial, explicitly state your assumptions:
 
-```
+```text
 ASSUMPTIONS I'M MAKING:
 1. [assumption about requirements]
 2. [assumption about architecture]

@@ -58,7 +58,7 @@ Summarize key concerns, name what was done well (at least one specific thing), a
 
 **Be specific and actionable.** Every blocking/important comment names the problem, the consequence, and a concrete fix:
 
-```
+```text
 ❌ "This is wrong."
 ✅ "[blocking] This can race when two requests update the same task —
    last write wins and drops fields. Consider optimistic locking via

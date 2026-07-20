@@ -14,11 +14,13 @@ Skills live in `skills/<name>/SKILL.md`. If a task matches a skill — even part
 | PLAN | Spec exists, needs breakdown | `planning-and-task-breakdown` |
 | BUILD | Implementing anything | `incremental-implementation` + `test-driven-development` |
 | BUILD | UI work / API design / framework code | `frontend-ui-engineering` / `api-and-interface-design` / `source-driven-development` |
+| BUILD | Auth, database/SQL, or error-handling design | `auth-implementation-patterns` / `sql-optimization-patterns` / `error-handling-patterns` |
 | VERIFY | Bug, failure, unexpected behavior | `debugging-strategies` |
-| VERIFY | Browser-based behavior | `chrome-devtools-axi` |
+| VERIFY | Browser-based behavior | `chrome-devtools-axi` (live verification), `e2e-testing-patterns` (automated tests) |
 | REVIEW | Code review | `code-review-and-quality` |
 | REVIEW | Security or performance concern | `security-and-hardening` / `performance-optimization` |
 | SHIP | Commit, refactor, CI, deploy | `git-workflow-and-versioning`, `code-simplification`, `ci-cd-and-automation`, `shipping-and-launch` |
+| SHIP | Docs/ADRs; removing or replacing a system | `documentation-and-adrs` / `deprecation-and-migration` |
 
 ## Operating Rules
 
@@ -31,7 +33,7 @@ Skills live in `skills/<name>/SKILL.md`. If a task matches a skill — even part
 
 ## PR Review Protocol
 
-When asked to process PR comments: fetch inline comments and review threads (`gh` CLI or GitHub MCP); triage each as accept / adapt / decline against repo best practices — don't blindly comply with bad suggestions, propose the better alternative; apply fixes holistically, not line-by-line; then resolve the threads and report what was fixed and what needs reviewer input.
+When asked to process PR comments: fetch inline comments and review threads (prefer the `gh-axi` skill when available, else `gh` CLI or GitHub MCP); triage each as accept / adapt / decline against repo best practices — don't blindly comply with bad suggestions, propose the better alternative; apply fixes holistically, not line-by-line; then resolve the threads and report what was fixed and what needs reviewer input.
 
 ## Task Management
 

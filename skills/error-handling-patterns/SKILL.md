@@ -50,6 +50,7 @@ class ExternalServiceError extends AppError { /* code + which service */ }
 **Taxonomy rules:**
 - One base type; a handful of subtypes matching how callers *react* differently — not one class per message.
 - Every error carries a machine-readable `code`, a human-readable message, and enough context (ids, inputs) to debug.
+- `details` is log-only — never serialize it into API responses, and never put secrets, tokens, or raw PII in it (redact before capture). Clients get only the `code` and a safe message.
 - **Wrap external errors at the boundary** (`cause`/`from e`/`%w`): callers see your taxonomy, logs keep the original chain.
 - Error messages say what happened and what to do about it. "Error occurred" is not a message.
 

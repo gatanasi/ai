@@ -41,7 +41,7 @@ Flakiness is almost always a waiting or isolation bug, not "just E2E being E2E":
 - **Prefer auto-waiting assertions** (`await expect(locator).toBeVisible()`) over manual waits — they retry until timeout.
 - When an action triggers a request, register the wait *before* the action (`page.waitForResponse(...)`, then click).
 - **Tests are independent:** any test can run alone, in any order, in parallel. No test depends on state another test created.
-- **Each test owns its data:** create unique fixtures in setup (e.g. `test-${Date.now()}@example.com`), clean up in teardown. Prefer seeding via API/DB over clicking through the UI to build preconditions.
+- **Each test owns its data:** create unique fixtures in setup (e.g. `test-${crypto.randomUUID()}@example.com` — not `Date.now()`, which collides across parallel workers), clean up in teardown. Prefer seeding via API/DB over clicking through the UI to build preconditions.
 - Log in via API or a stored auth state, not through the login form in every test — the login *flow* gets its own dedicated test.
 
 ## Structural Patterns
