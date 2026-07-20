@@ -1,553 +1,96 @@
 ---
 name: code-review-and-quality
-description: Master effective code review practices to provide constructive feedback, catch bugs early, and foster knowledge sharing while maintaining team morale. Use when reviewing pull requests, establishing review standards, or mentoring developers.
+description: Reviews code changes effectively. Use when reviewing pull requests or diffs, responding to review feedback, or establishing review standards. Catches bugs early and keeps feedback constructive and actionable.
 ---
 
-# Code Review Excellence
+# Code Review and Quality
 
-Transform code reviews from gatekeeping to knowledge sharing through constructive feedback, systematic analysis, and collaborative improvement.
+## Overview
 
-## When to Use This Skill
+A review's job is to catch problems early, keep the codebase maintainable, and spread knowledge — not to gatekeep or rewrite the change to your taste. This skill defines the review *process* and feedback craft. For the five-dimension evaluation framework and the structured report format, use the `agents/code-reviewer.agent.md` persona (run it as a subagent when available); for deep security review, `security-and-hardening` or the `agents/security-auditor.agent.md` persona.
 
-- Reviewing pull requests and code changes
-- Establishing code review standards for teams
-- Mentoring junior developers through reviews
-- Conducting architecture reviews
-- Creating review checklists and guidelines
-- Improving team collaboration
-- Reducing code review cycle time
-- Maintaining code quality standards
+## When to Use
 
-## Core Principles
+- Reviewing a pull request or local diff before merge
+- Responding to review comments on your own change (triage: accept / adapt / decline)
+- Establishing review standards for a project
 
-### 1. The Review Mindset
+## Review Scope
 
-**Goals of Code Review:**
+**Review:** logic correctness and edge cases, security, performance, test coverage and quality, error handling, API design and naming, architectural fit.
 
-- Catch bugs and edge cases
-- Ensure code maintainability
-- Share knowledge across team
-- Enforce coding standards
-- Improve design and architecture
-- Build team culture
+**Don't review manually:** formatting, import order, lint violations — automate these (Prettier, ESLint, Black); a machine should comment on style so humans can comment on substance.
 
-**Not the Goals:**
+## The Review Process
 
-- Show off knowledge
-- Nitpick formatting (use linters)
-- Block progress unnecessarily
-- Rewrite to your preference
+### Phase 1: Context
 
-### 2. Effective Feedback
+1. Read the PR description, linked issue, and spec — know what the change is *supposed* to do.
+2. Check CI status and the diff size. Over ~400 lines, ask to split (see `git-workflow-and-versioning` for sizing).
+3. **Read the tests first** — they reveal intent and coverage gaps faster than the implementation.
 
-**Good Feedback is:**
+### Phase 2: High-Level Pass
 
-- Specific and actionable
-- Educational, not judgmental
-- Focused on the code, not the person
-- Balanced (praise good work too)
-- Prioritized (critical vs nice-to-have)
+- Does the solution fit the problem? Is there a simpler approach?
+- Is it consistent with existing patterns, or does it introduce a new one (and is that justified)?
+- Are files in the right places? Is the change cohesive, or several changes in a trench coat?
 
-```markdown
-❌ Bad: "This is wrong."
-✅ Good: "This could cause a race condition when multiple users
-access simultaneously. Consider using a mutex here."
+### Phase 3: Line-by-Line Pass
 
-❌ Bad: "Why didn't you use X pattern?"
-✅ Good: "Have you considered the Repository pattern? It would
-make this easier to test. Here's an example: [link]"
+- Correctness: edge cases (null/empty/boundary), off-by-one, race conditions, error paths
+- Security: input validation, parameterized queries, authz on every endpoint, no secrets, output encoding
+- Performance: N+1 queries, unbounded fetches, missing pagination, blocking I/O in hot paths
+- Maintainability: names, single-purpose functions, magic numbers, dead code
+- Dependencies: does the existing stack already solve this? Check size, maintenance, vulnerabilities, license. Every new dependency is a liability.
 
-❌ Bad: "Rename this variable."
-✅ Good: "[nit] Consider `userCount` instead of `uc` for
-clarity. Not blocking if you prefer to keep it."
+### Phase 4: Summary and Decision
+
+Summarize key concerns, name what was done well (at least one specific thing), and give a clear verdict: approve / comment / request changes. Never approve with unresolved critical issues.
+
+## Feedback Craft
+
+**Label severity** so the author knows what blocks and what doesn't:
+
+- `[blocking]` — must fix before merge (bug, security, data loss)
+- `[important]` — should fix; discuss if you disagree
+- `[nit]` — preference, not blocking
+- `[question]` / `[praise]` — no action required
+
+**Be specific and actionable.** Every blocking/important comment names the problem, the consequence, and a concrete fix:
+
+```text
+❌ "This is wrong."
+✅ "[blocking] This can race when two requests update the same task —
+   last write wins and drops fields. Consider optimistic locking via
+   the updatedAt check we use in TaskService.update."
 ```
 
-### 3. Review Scope
+**Ask questions to prompt thinking** ("What happens if `items` is empty?") and **suggest rather than command** ("Would extracting this into a shared utility make sense? It appears in 3 places."). Critique the code, not the person.
 
-**What to Review:**
+**Handling disagreement:** seek to understand the author's reasoning first; acknowledge valid points; bring data (benchmark, repro) over opinion; escalate to a third reviewer if stuck; and let go of non-critical preferences — perfection is the enemy of progress. The same triage applies when *receiving* review comments: accept, adapt, or decline with rationale — don't blindly comply with bad suggestions.
 
-- Logic correctness and edge cases
-- Security vulnerabilities
-- Performance implications
-- Test coverage and quality
-- Error handling
-- Documentation and comments
-- API design and naming
-- Architectural fit
+## Review Hygiene
 
-**What Not to Review Manually:**
+- Review promptly (within 24h) — stale PRs rot and block others
+- 60 minutes max per sitting; effectiveness drops sharply after
+- Same standards for every author; no rubber-stamping, no ghosting after requesting changes
+- Watch for scope creep in your own comments ("while you're at it..." is a new task, not a review comment)
 
-- Code formatting (use Prettier, Black, etc.)
-- Import organization
-- Linting violations
-- Simple typos
+## Red Flags
 
-## Review Process
-
-### Phase 1: Context Gathering
-
-```markdown
-Before diving into code, understand:
-
-1. Read PR description and linked issue
-2. Check PR size (>400 lines? Ask to split)
-3. Review CI/CD status (tests passing?)
-4. Understand the business requirement
-5. Note any relevant architectural decisions
-```
-
-### Phase 2: High-Level Review
-
-```markdown
-1. **Architecture & Design**
-   - Does the solution fit the problem?
-   - Are there simpler approaches?
-   - Is it consistent with existing patterns?
-   - Will it scale?
-
-2. **File Organization**
-   - Are new files in the right places?
-   - Is code grouped logically?
-   - Are there duplicate files?
-
-3. **Testing Strategy**
-   - Are there tests?
-   - Do tests cover edge cases?
-   - Are tests readable?
-```
-
-### Phase 3: Line-by-Line Review
-
-```markdown
-For each file:
-
-1. **Logic & Correctness**
-   - Edge cases handled?
-   - Off-by-one errors?
-   - Null/undefined checks?
-   - Race conditions?
-
-2. **Security**
-   - Input validation?
-   - SQL injection risks?
-   - XSS vulnerabilities?
-   - Sensitive data exposure?
-
-3. **Performance**
-   - N+1 queries?
-   - Unnecessary loops?
-   - Memory leaks?
-   - Blocking operations?
-
-4. **Maintainability**
-   - Clear variable names?
-   - Functions doing one thing?
-   - Complex code commented?
-   - Magic numbers extracted?
-```
-
-### Phase 4: Summary & Decision
-
-```markdown
-1. Summarize key concerns
-2. Highlight what you liked
-3. Make clear decision:
-   - ✅ Approve
-   - 💬 Comment (minor suggestions)
-   - 🔄 Request Changes (must address)
-4. Offer to pair if complex
-```
-
-## Review Techniques
-
-### Technique 1: The Checklist Method
-
-```markdown
-## Security Checklist
-
-- [ ] User input validated and sanitized
-- [ ] SQL queries use parameterization
-- [ ] Authentication/authorization checked
-- [ ] Secrets not hardcoded
-- [ ] Error messages don't leak info
-
-## Performance Checklist
-
-- [ ] No N+1 queries
-- [ ] Database queries indexed
-- [ ] Large lists paginated
-- [ ] Expensive operations cached
-- [ ] No blocking I/O in hot paths
-
-## Testing Checklist
-
-- [ ] Happy path tested
-- [ ] Edge cases covered
-- [ ] Error cases tested
-- [ ] Test names are descriptive
-- [ ] Tests are deterministic
-```
-
-### Technique 2: The Question Approach
-
-Instead of stating problems, ask questions to encourage thinking:
-
-```markdown
-❌ "This will fail if the list is empty."
-✅ "What happens if `items` is an empty array?"
-
-❌ "You need error handling here."
-✅ "How should this behave if the API call fails?"
-
-❌ "This is inefficient."
-✅ "I see this loops through all users. Have we considered
-the performance impact with 100k users?"
-```
-
-### Technique 3: Suggest, Don't Command
-
-````markdown
-## Use Collaborative Language
-
-❌ "You must change this to use async/await"
-✅ "Suggestion: async/await might make this more readable:
-`typescript
-    async function fetchUser(id: string) {
-        const user = await db.query('SELECT * FROM users WHERE id = ?', id);
-        return user;
-    }
-    `
-What do you think?"
-
-❌ "Extract this into a function"
-✅ "This logic appears in 3 places. Would it make sense to
-extract it into a shared utility function?"
-````
-
-### Technique 4: Differentiate Severity
-
-```markdown
-Use labels to indicate priority:
-
-🔴 [blocking] - Must fix before merge
-🟡 [important] - Should fix, discuss if disagree
-🟢 [nit] - Nice to have, not blocking
-💡 [suggestion] - Alternative approach to consider
-📚 [learning] - Educational comment, no action needed
-🎉 [praise] - Good work, keep it up!
-
-Example:
-"🔴 [blocking] This SQL query is vulnerable to injection.
-Please use parameterized queries."
-
-"🟢 [nit] Consider renaming `data` to `userData` for clarity."
-
-"🎉 [praise] Excellent test coverage! This will catch edge cases."
-```
-
-## Language-Specific Patterns
-
-### Python Code Review
-
-```python
-# Check for Python-specific issues
-
-# ❌ Mutable default arguments
-def add_item(item, items=[]):  # Bug! Shared across calls
-    items.append(item)
-    return items
-
-# ✅ Use None as default
-def add_item(item, items=None):
-    if items is None:
-        items = []
-    items.append(item)
-    return items
-
-# ❌ Catching too broad
-try:
-    result = risky_operation()
-except:  # Catches everything, even KeyboardInterrupt!
-    pass
-
-# ✅ Catch specific exceptions
-try:
-    result = risky_operation()
-except ValueError as e:
-    logger.error(f"Invalid value: {e}")
-    raise
-
-# ❌ Using mutable class attributes
-class User:
-    permissions = []  # Shared across all instances!
-
-# ✅ Initialize in __init__
-class User:
-    def __init__(self):
-        self.permissions = []
-```
-
-### TypeScript/JavaScript Code Review
-
-```typescript
-// Check for TypeScript-specific issues
-
-// ❌ Using any defeats type safety
-function processData(data: any) {  // Avoid any
-    return data.value;
-}
-
-// ✅ Use proper types
-interface DataPayload {
-    value: string;
-}
-function processData(data: DataPayload) {
-    return data.value;
-}
-
-// ❌ Not handling async errors
-async function fetchUser(id: string) {
-    const response = await fetch(`/api/users/${id}`);
-    return response.json();  // What if network fails?
-}
-
-// ✅ Handle errors properly
-async function fetchUser(id: string): Promise<User> {
-    try {
-        const response = await fetch(`/api/users/${id}`);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Failed to fetch user:', error);
-        throw error;
-    }
-}
-
-// ❌ Mutation of props
-function UserProfile({ user }: Props) {
-    user.lastViewed = new Date();  // Mutating prop!
-    return <div>{user.name}</div>;
-}
-
-// ✅ Don't mutate props
-function UserProfile({ user, onView }: Props) {
-    useEffect(() => {
-        onView(user.id);  // Notify parent to update
-    }, [user.id]);
-    return <div>{user.name}</div>;
-}
-```
-
-## Advanced Review Patterns
-
-### Pattern 1: Architectural Review
-
-```markdown
-When reviewing significant changes:
-
-1. **Design Document First**
-   - For large features, request design doc before code
-   - Review design with team before implementation
-   - Agree on approach to avoid rework
-
-2. **Review in Stages**
-   - First PR: Core abstractions and interfaces
-   - Second PR: Implementation
-   - Third PR: Integration and tests
-   - Easier to review, faster to iterate
-
-3. **Consider Alternatives**
-   - "Have we considered using [pattern/library]?"
-   - "What's the tradeoff vs. the simpler approach?"
-   - "How will this evolve as requirements change?"
-```
-
-### Pattern 2: Test Quality Review
-
-```typescript
-// ❌ Poor test: Implementation detail testing
-test('increments counter variable', () => {
-    const component = render(<Counter />);
-    const button = component.getByRole('button');
-    fireEvent.click(button);
-    expect(component.state.counter).toBe(1);  // Testing internal state
-});
-
-// ✅ Good test: Behavior testing
-test('displays incremented count when clicked', () => {
-    render(<Counter />);
-    const button = screen.getByRole('button', { name: /increment/i });
-    fireEvent.click(button);
-    expect(screen.getByText('Count: 1')).toBeInTheDocument();
-});
-
-// Review questions for tests:
-// - Do tests describe behavior, not implementation?
-// - Are test names clear and descriptive?
-// - Do tests cover edge cases?
-// - Are tests independent (no shared state)?
-// - Can tests run in any order?
-```
-
-### Pattern 3: Security Review
-
-```markdown
-## Security Review Checklist
-
-### Authentication & Authorization
-
-- [ ] Is authentication required where needed?
-- [ ] Are authorization checks before every action?
-- [ ] Is JWT validation proper (signature, expiry)?
-- [ ] Are API keys/secrets properly secured?
-
-### Input Validation
-
-- [ ] All user inputs validated?
-- [ ] File uploads restricted (size, type)?
-- [ ] SQL queries parameterized?
-- [ ] XSS protection (escape output)?
-
-### Data Protection
-
-- [ ] Passwords hashed (bcrypt/argon2)?
-- [ ] Sensitive data encrypted at rest?
-- [ ] HTTPS enforced for sensitive data?
-- [ ] PII handled according to regulations?
-
-### Common Vulnerabilities
-
-- [ ] No eval() or similar dynamic execution?
-- [ ] No hardcoded secrets?
-- [ ] CSRF protection for state-changing operations?
-- [ ] Rate limiting on public endpoints?
-```
-
-## Dependency Discipline
-
-Part of code review is dependency review:
-
-**Before adding any dependency:**
-
-1. Does the existing stack solve this? (Often it does.)
-2. How large is the dependency? (Check bundle impact.)
-3. Is it actively maintained? (Check last commit, open issues.)
-4. Does it have known vulnerabilities?
-5. What's the license? (Must be compatible with the project.)
-
-**Rule:** Prefer standard library and existing utilities over new dependencies. Every dependency is a liability.
-
-## Giving Difficult Feedback
-
-### Pattern: The Sandwich Method (Modified)
-
-```markdown
-Traditional: Praise + Criticism + Praise (feels fake)
-
-Better: Context + Specific Issue + Helpful Solution
-
-Example:
-"I noticed the payment processing logic is inline in the
-controller. This makes it harder to test and reuse.
-
-[Specific Issue]
-The calculateTotal() function mixes tax calculation,
-discount logic, and database queries, making it difficult
-to unit test and reason about.
-
-[Helpful Solution]
-Could we extract this into a PaymentService class? That
-would make it testable and reusable. I can pair with you
-on this if helpful."
-```
-
-### Handling Disagreements
-
-```markdown
-When author disagrees with your feedback:
-
-1. **Seek to Understand**
-   "Help me understand your approach. What led you to
-   choose this pattern?"
-
-2. **Acknowledge Valid Points**
-   "That's a good point about X. I hadn't considered that."
-
-3. **Provide Data**
-   "I'm concerned about performance. Can we add a benchmark
-   to validate the approach?"
-
-4. **Escalate if Needed**
-   "Let's get [architect/senior dev] to weigh in on this."
-
-5. **Know When to Let Go**
-   If it's working and not a critical issue, approve it.
-   Perfection is the enemy of progress.
-```
-
-## Best Practices
-
-1. **Review Promptly**: Within 24 hours, ideally same day
-2. **Limit PR Size**: 200-400 lines max for effective review
-3. **Review in Time Blocks**: 60 minutes max, take breaks
-4. **Use Review Tools**: GitHub, GitLab, or dedicated tools
-5. **Automate What You Can**: Linters, formatters, security scans
-6. **Build Rapport**: Emoji, praise, and empathy matter
-7. **Be Available**: Offer to pair on complex issues
-8. **Learn from Others**: Review others' review comments
-
-## Common Pitfalls
-
-- **Perfectionism**: Blocking PRs for minor style preferences
-- **Scope Creep**: "While you're at it, can you also..."
-- **Inconsistency**: Different standards for different people
-- **Delayed Reviews**: Letting PRs sit for days
-- **Ghosting**: Requesting changes then disappearing
-- **Rubber Stamping**: Approving without actually reviewing
-- **Bike Shedding**: Debating trivial details extensively
-
-## Templates
-
-### PR Review Comment Template
-
-```markdown
-## Summary
-
-[Brief overview of what was reviewed]
-
-## Strengths
-
-- [What was done well]
-- [Good patterns or approaches]
-
-## Required Changes
-
-🔴 [Blocking issue 1]
-🔴 [Blocking issue 2]
-
-## Suggestions
-
-💡 [Improvement 1]
-💡 [Improvement 2]
-
-## Questions
-
-❓ [Clarification needed on X]
-❓ [Alternative approach consideration]
-
-## Verdict
-
-✅ Approve after addressing required changes
-```
+- Approving without reading the tests (or with no tests present for behavior changes)
+- Review threads full of formatting nits (automate them instead)
+- Feedback without severity labels — author can't tell what blocks merge
+- "Request changes" verdicts with vague, unactionable comments
+- Large PRs reviewed as a skim because splitting felt like too much work
+- Blindly applying reviewer suggestions that conflict with repo conventions
 
 ## Verification
 
-After review is complete:
+After completing a review (or a review-response round):
 
-- [ ] All Critical issues are resolved
-- [ ] All Important issues are resolved or explicitly deferred with justification
-- [ ] Tests pass
+- [ ] All blocking issues resolved; important issues resolved or explicitly deferred with justification
+- [ ] Tests pass and cover the changed behavior
 - [ ] Build succeeds
-- [ ] The verification story is documented (what changed, how it was verified)
+- [ ] Verdict and rationale are recorded on the PR
+- [ ] Resolved threads closed; remaining questions assigned to someone

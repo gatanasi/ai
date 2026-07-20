@@ -1,110 +1,43 @@
 # AGENTS.md
 
-This file defines the operating standard for AI agents in this repository.
+Operating standard for AI agents (Claude, Codex, Gemini, OpenCode, ...) working in this repository.
 Priorities: (1) Correctness, (2) Root-cause resolution, (3) Maintainability.
 
-## Core Rules
+## Skills
 
-- If a task matches a skill, you MUST invoke it
-- Skills are located in `skills/<skill-name>/SKILL.md`
-- Never implement directly if a skill applies
-- Always follow the skill instructions exactly (do not partially apply them)
+Skills live in `skills/<name>/SKILL.md`. If a task matches a skill — even partially — invoke it and follow it exactly. Never implement directly when a skill applies. When the match is unclear, consult `using-agent-skills` (the router). Multiple skills often chain: complete the required upstream steps (spec, plan) before implementing.
 
-### Intent → Skill Mapping
+| Phase | Trigger | Skill(s) |
+|---|---|---|
+| DEFINE | Vague idea needing refinement | `idea-refine` |
+| DEFINE | New feature or significant change | `spec-driven-development` |
+| PLAN | Spec exists, needs breakdown | `planning-and-task-breakdown` |
+| BUILD | Implementing anything | `incremental-implementation` + `test-driven-development` |
+| BUILD | UI work / API design / framework code | `frontend-ui-engineering` / `api-and-interface-design` / `source-driven-development` |
+| BUILD | Auth, database/SQL, or error-handling design | `auth-implementation-patterns` / `sql-optimization-patterns` / `error-handling-patterns` |
+| VERIFY | Bug, failure, unexpected behavior | `debugging-strategies` |
+| VERIFY | Browser-based behavior | `chrome-devtools-axi` (live verification), `e2e-testing-patterns` (automated tests) |
+| REVIEW | Code review | `code-review-and-quality` |
+| REVIEW | Security or performance concern | `security-and-hardening` / `performance-optimization` |
+| SHIP | Commit, refactor, CI, deploy | `git-workflow-and-versioning`, `code-simplification`, `ci-cd-and-automation`, `shipping-and-launch` |
+| SHIP | Docs/ADRs; removing or replacing a system | `documentation-and-adrs` / `deprecation-and-migration` |
 
-The agent should automatically map user intent to skills:
+## Operating Rules
 
-- Feature / new functionality → `spec-driven-development`, then `incremental-implementation`, `test-driven-development`
-- Planning / breakdown → `planning-and-task-breakdown`
-- Bug / failure / unexpected behavior → `debugging-strategies`
-- Code review → `code-review-and-quality`
-- Refactoring / simplification → `code-simplification`
-- API or interface design → `api-and-interface-design`
-- UI work → `frontend-ui-engineering`
+1. **Plan first.** For any non-trivial task (3+ steps or an architectural decision), plan in read-only mode before writing code — use plan mode if your tool has one. If work goes sideways, stop and re-plan; don't keep pushing.
+2. **Verify before done.** Never mark a task complete without evidence: tests, logs, diffs, or runtime checks. Ask: "Would a staff engineer approve this?"
+3. **Demand elegance, balanced.** For non-trivial changes, ask "is there a more elegant way?" If a fix feels hacky, re-implement it knowing everything you know now. Skip this for simple, obvious fixes — don't over-engineer.
+4. **Fix bugs autonomously.** Given a bug report, logs, or failing CI: reproduce, find the root cause, and fix it without asking for hand-holding. No temporary patches.
+5. **Use subagents for research.** When your tool supports them, offload exploration and parallel analysis to subagents (one focused task each) to keep the main context clean.
+6. **Simplicity first.** Make every change as simple as possible; impact minimal code.
 
-### Lifecycle Mapping (Implicit Commands)
+## PR Review Protocol
 
-OpenCode does not support slash commands like `/spec` or `/plan`.
-
-Instead, the agent must internally follow this lifecycle:
-
-- DEFINE → `spec-driven-development`
-- PLAN → `planning-and-task-breakdown`
-- BUILD → `incremental-implementation` + `test-driven-development`
-- VERIFY → `debugging-and-error-recovery`
-- REVIEW → `code-review-and-quality`
-- SHIP → `shipping-and-launch`
-
-### Execution Model
-
-For every request:
-
-1. Determine if any skill applies (even 1% chance)
-2. Invoke the appropriate skill using the `skill` tool
-3. Follow the skill workflow strictly
-4. Only proceed to implementation after required steps (spec, plan, etc.) are complete
-
-## 1. Plan Node Default
-
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately - don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
-
-## 2. Subagent Strategy
-
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One task per subagent for focused execution
-
-## 3. Self-Improvement Loop
-
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
-
-## 4. Verification Before Done
-
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
-
-## 5. Demand Elegance (Balanced)
-
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes - don't over-engineer
-- Challenge your own work before presenting it
-
-## 6. Autonomous Bug Fixing
-
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests - then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
-
-## 7. PR Review Protocol
-
-When asked to process PR comments:
-
-- **Fetch Context:** Use `gh cli` or Github MCP server to pull inline comments and review threads.
-- **Triage (Accept/Adapt/Decline):** Assess against repo best practices. Do not blindly comply with bad suggestions; propose the elegant alternative.
-- **Resolve Systemically:** Apply fixes holistically, not just line-by-line.
-- **Close the Loop:** Mark threads as resolved via CLI/MCP and output a brief summary report of what was fixed and what needs reviewer input.
+When asked to process PR comments: fetch inline comments and review threads (prefer the `gh-axi` skill when available, else `gh` CLI or GitHub MCP); triage each as accept / adapt / decline against repo best practices — don't blindly comply with bad suggestions, propose the better alternative; apply fixes holistically, not line-by-line; then resolve the threads and report what was fixed and what needs reviewer input.
 
 ## Task Management
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
-
-## Core Principles
-
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+1. Write the plan to `tasks/todo.md` as checkable items; confirm it before implementing.
+2. Mark items complete as you go and summarize changes at each step.
+3. When done, add a review section to `tasks/todo.md`.
+4. After any correction from the user, record the pattern in `tasks/lessons.md` and review that file at session start.
